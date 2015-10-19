@@ -57,7 +57,6 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
   
   bytes=0; irank=0;
   ipm_call_count++;
-  fprintf(stderr, "IPM Call count: %d.\n", ipm_call_count);
   
   __GET_BYTES__(bytes); 
   __GET_RANK__(irank);
@@ -126,6 +125,7 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
 #endif /* IPM_COLLECTIVE_DETAILS */
   
   IPM_HASH_HKEY(ipm_htable, key, idx); 
+  IPM_HASH_HKEY(ipm_interval_htable[htable_switch], key, idx); 
   
 #ifdef HAVE_KEYHIST
 #ifdef HAVE_MPI_TRACE
@@ -146,15 +146,21 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
 #endif
 
   IPM_HASHTABLE_ADD(idx,t,tstart);
+  IPM_INTERVAL_HASHTABLE_ADD(htable_switch,idx,t,tstart);
 
   if(ipm_call_count == 25) {
+    int oldinterval;
     /* For now just a useless mutex lock (as a test). Will become useful (probably, maybe
      * not here) when log writer thread is enabled/implemented. */
-    pthread_mutex_lock(&htable_mutex);
-    ipm_interval_switch ? ipm_interval_switch-- : ipm_interval_switch++;
-    pthread_mutex_unlock(&htable_mutex);
+    //pthread_mutex_lock(&htable_mutex);
+    oldinterval = htable_switch;
+    htable_switch ? htable_switch-- : htable_switch++;
     ipm_call_count = 0;
-    report_xml_local(0);
+    for(int i = 0; i < MAXSIZE_HASH; i++) {
+      HENT_CLEAR(ipm_interval_htable[htable_switch][i]);
+    }
+    //pthread_mutex_unlock(&htable_mutex);
+    report_xml_atinterval(0, oldinterval);
   }
  
 #ifdef HAVE_SNAP

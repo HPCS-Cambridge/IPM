@@ -937,7 +937,7 @@ int report_xml_local(unsigned long flags)
 }
 
 
-int report_xml_atinterval(unsigned long flags)
+int report_xml_atinterval(unsigned long flags, int interval)
 {
   FILE *f;
   char buf[80];
@@ -957,13 +957,11 @@ int report_xml_atinterval(unsigned long flags)
     return IPM_EOTHER;
   }
 
-  fprintf(stderr, "[RANK %d] Local-logging to file '%s'.\n", task.taskid, filename);
 
   size += xml_profile_header(f);
   fflush(f);
 
-  //size += xml_task(f, &task, ipm_interval_htable[ipm_interval_switch]);
-  size += xml_task(f, &task, ipm_htable);
+  size += xml_task(f, &task, ipm_interval_htable[interval]);
   fflush(f);
 
   size += xml_profile_footer(f);

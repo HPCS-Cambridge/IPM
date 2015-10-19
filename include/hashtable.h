@@ -58,7 +58,7 @@ extern ipm_hent_t ipm_htable[MAXSIZE_HASH];
 extern ipm_hent_t ipm_interval_htable[2][MAXSIZE_HASH];
 extern int ipm_hspace;
 extern int ipm_call_count;
-extern int ipm_interval_switch;
+extern int htable_switch;
 extern pthread_mutex_t htable_mutex;
 
 
@@ -153,6 +153,26 @@ extern IPM_KEY_TYPE last_hkey;
       ipm_htable[idx_].timestamps[ipm_htable[idx_].count-1] = tstart_;   \
       if( t>ipm_htable[idx_].t_max ) ipm_htable[idx_].t_max=t_;	\
       if( t<ipm_htable[idx_].t_min ) ipm_htable[idx_].t_min=t_;	\
+    }								\
+  }
+
+#define IPM_INTERVAL_HASHTABLE_ADD(interval_,idx_,t_,tstart_)				\
+  {								\
+    if( idx_>= 0 && idx_ < MAXSIZE_HASH ) {			\
+      ipm_interval_htable[interval_][idx_].count++;					\
+      ipm_interval_htable[interval_][idx_].t_tot+=t_;				\
+      if( ipm_interval_htable[interval_][idx_].timestamps ) {   \
+        ipm_interval_htable[interval_][idx_].timestamps = realloc(ipm_interval_htable[interval_][idx_].timestamps, sizeof(double) * ipm_interval_htable[interval_][idx_].count);   \
+      }   \
+      else {    \
+        ipm_interval_htable[interval_][idx_].timestamps = malloc(sizeof(double) * ipm_interval_htable[interval_][idx_].count);    \
+      }   \
+      if( !ipm_interval_htable[interval_][idx_].timestamps ) {                                \
+        abort();                                                          \
+      }                                                                   \
+      ipm_interval_htable[interval_][idx_].timestamps[ipm_interval_htable[interval_][idx_].count-1] = tstart_;   \
+      if( t>ipm_interval_htable[interval_][idx_].t_max ) ipm_interval_htable[interval_][idx_].t_max=t_;	\
+      if( t<ipm_interval_htable[interval_][idx_].t_min ) ipm_interval_htable[interval_][idx_].t_min=t_;	\
     }								\
   }
 

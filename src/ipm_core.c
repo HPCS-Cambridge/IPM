@@ -99,7 +99,7 @@ int ipm_init(int flags)
   ipm_state=STATE_IN_INIT;
 
   ipm_call_count = 0;
-  ipm_interval_switch = 0;
+  htable_switch = 0;
 
   /* check if IPM_TARGET is set and if it is,
      only monitor matching processes */
@@ -125,7 +125,9 @@ int ipm_init(int flags)
   t_init = ipm_wtime();
   taskdata_init(&task);
   htable_init(ipm_htable);
-  htable_init(ipm_interval_htable[ipm_interval_switch]);
+  //htable_init(ipm_interval_htable[htable_switch]);
+  //ipm_interval_htable[0] = {0};
+  //ipm_interval_htable[1] = {0};
 
   /* need to get env variables before modules init */
   ipm_get_env();
@@ -353,7 +355,7 @@ int ipm_finalize(int flags)
   // AT: Clear alloc'd timestamp memory from global htable.
   for( i = 0; i < MAXSIZE_HASH; i++ ) {
     HENT_CLEAR(ipm_htable[i]);
-    HENT_CLEAR(ipm_interval_htable[ipm_interval_switch][i]);
+    HENT_CLEAR(ipm_interval_htable[htable_switch][i]);
   }
 
   return IPM_OK;
