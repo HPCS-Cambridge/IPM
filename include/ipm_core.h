@@ -39,12 +39,16 @@
 /* report nested regions? */
 #define FLAG_NESTED_REGIONS       (0x0000000000000001ULL <<  12)
 
+/* report at intervals */
+#define FLAG_REPORT_INTERVAL        (0x0000000000000001ULL <<  13)
+
 
 /* clear all REPORT bits */
 #define FLAG_CLEAR_REPORT(flags_)	\
   flags_ &= ~FLAG_REPORT_NONE;		\
   flags_ &= ~FLAG_REPORT_TERSE;		\
-  flags_ &= ~FLAG_REPORT_FULL;
+  flags_ &= ~FLAG_REPORT_FULL;    \
+  flags_ &= ~FLAG_REPORT_INTERVAL;
 
 
 /* clear all LOG bits */

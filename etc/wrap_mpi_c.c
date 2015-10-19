@@ -56,6 +56,8 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
   t=tstop-tstart;
   
   bytes=0; irank=0;
+  ipm_call_count++;
+  fprintf(stderr, "IPM Call count: %d.\n", ipm_call_count);
   
   __GET_BYTES__(bytes); 
   __GET_RANK__(irank);
@@ -144,6 +146,16 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
 #endif
 
   IPM_HASHTABLE_ADD(idx,t,tstart);
+
+  if(ipm_call_count == 25) {
+    /* For now just a useless mutex lock (as a test). Will become useful (probably, maybe
+     * not here) when log writer thread is enabled/implemented. */
+    pthread_mutex_lock(&htable_mutex);
+    ipm_interval_switch ? ipm_interval_switch-- : ipm_interval_switch++;
+    pthread_mutex_unlock(&htable_mutex);
+    ipm_call_count = 0;
+    report_xml_local(0);
+  }
  
 #ifdef HAVE_SNAP
  IPM_SNAP;

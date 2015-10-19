@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "ipm_types.h"
 #include "ipm_sizes.h"
 #include "hashkey.h"
@@ -54,7 +55,12 @@ typedef struct scanstat
 
 
 extern ipm_hent_t ipm_htable[MAXSIZE_HASH];
+extern ipm_hent_t ipm_interval_htable[2][MAXSIZE_HASH];
 extern int ipm_hspace;
+extern int ipm_call_count;
+extern int ipm_interval_switch;
+extern pthread_mutex_t htable_mutex;
+
 
 extern IPM_KEY_TYPE last_hkey;
 

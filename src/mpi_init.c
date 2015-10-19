@@ -56,6 +56,7 @@ void ipm_mpi_init() {
 
   IPM_MPI_KEY(key, MPI_INIT_ID_GLOBAL, 0, 0, 1, csite);
   IPM_HASH_HKEY(ipm_htable, key, idx);
+  IPM_HASH_HKEY(ipm_interval_htable[ipm_interval_switch], key, idx);
 
 #ifdef HAVE_MPI_TRACE
 #ifdef HAVE_KEYHIST
@@ -74,17 +75,24 @@ void ipm_mpi_init() {
 #endif
 
   ipm_htable[idx].count++;
+  ipm_interval_htable[ipm_interval_switch][idx].count++;
   // AT: TODO - necessary <yes!>? What's happening here, anyway?
   if( ipm_htable[idx].timestamps) {
     ipm_htable[idx].timestamps = realloc(ipm_htable[idx].timestamps, sizeof(double) * ipm_htable[idx].count);
+    ipm_interval_htable[ipm_interval_switch][idx].timestamps = realloc(ipm_interval_htable[ipm_interval_switch][idx].timestamps, sizeof(double) * ipm_htable[idx].count);
   }
   else {
     ipm_htable[idx].timestamps = malloc(sizeof(double) * ipm_htable[idx].count);
+    ipm_interval_htable[ipm_interval_switch][idx].timestamps = malloc(sizeof(double) * ipm_htable[idx].count);
   }
-  if( !ipm_htable[idx].timestamps ) {
+  if( !ipm_htable[idx].timestamps || !ipm_interval_htable[ipm_interval_switch][idx].timestamps ) {
     abort();
   }
   IPM_TIMESTAMP(ipm_htable[idx].timestamps[ipm_htable[idx].count-1]);
+  ipm_interval_htable[ipm_interval_switch][idx].timestamps[ipm_htable[idx].count-1] = ipm_htable[idx].timestamps[ipm_htable[idx].count-1];
+  ipm_interval_htable[ipm_interval_switch][idx].t_min=0.0;
+  ipm_interval_htable[ipm_interval_switch][idx].t_max=0.0;
+  ipm_interval_htable[ipm_interval_switch][idx].t_tot=0.0;
   // END AT
   ipm_htable[idx].t_min=0.0;
   ipm_htable[idx].t_max=0.0;

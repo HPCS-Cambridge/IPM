@@ -25,6 +25,7 @@ extern char **environ;
 #define ENV_SNAP           8
 #endif
 #define ENV_NESTED_REGIONS 9
+#define ENV_REPORT_INTERVAL  10
 
 
 #define MAXSIZE_ENVKEY  120
@@ -93,6 +94,11 @@ int ipm_get_env()
    /* IPM_REPORT none|terse|full */
     else if(!strcmp("IPM_REPORT", key)) {
       ipm_check_env(ENV_REPORT, val);
+    }
+    
+   /* IPM_REPORT_INTERVAL */
+    else if(!strcmp("IPM_REPORT_INTERVAL", key)) {
+      ipm_check_env(ENV_REPORT_INTERVAL, val);
     }
     
     /* IPM_LOG none|terse|full */
@@ -203,6 +209,12 @@ int ipm_check_env(int env, char *val)
       }
       else {
 	IPMERR("Unrecognized value for IPM_LOG '%s', ignoring\n", val);
+      }
+      break;
+
+    case ENV_REPORT_INTERVAL:
+      if(!strncmp(val,"true",4) || !strncmp(val,"TRUE",4)) {
+          task.flags |= FLAG_REPORT_INTERVAL;
       }
       break;
 

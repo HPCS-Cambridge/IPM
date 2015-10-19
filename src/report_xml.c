@@ -896,6 +896,13 @@ void report_set_filename()
 }
 
 
+/* FIXME - do some actual fi*/
+void report_set_ranked_filename(char *filename)
+{
+  sprintf(filename, "%s/%s-RANK%d.ipm.xml", task.logdir, task.fname, task.taskid);
+}
+
+
 int report_xml_local(unsigned long flags)
 {
   FILE *f;
@@ -915,9 +922,47 @@ int report_xml_local(unsigned long flags)
     return IPM_EOTHER;
   }
 
+  fprintf(stderr, "Local-logging to file '%s'.\n", logfname);
+
   size += xml_profile_header(f);
   fflush(f);
 
+  size += xml_task(f, &task, ipm_htable);
+  fflush(f);
+
+  size += xml_profile_footer(f);
+  fflush(f);
+
+  return IPM_OK;
+}
+
+
+int report_xml_atinterval(unsigned long flags)
+{
+  FILE *f;
+  char buf[80];
+  int i, nreg;
+  int size;
+  char filename[80];
+
+  print_selector=PRINT_TO_FILE;
+  print_flags=flags;
+  size=0;
+
+  report_set_ranked_filename(filename);
+
+  f=fopen(filename, "a");
+  if(!f) {
+    IPMERR("[RANK %d] Could not open IPM log file: '%s'\n", task.taskid ,filename);
+    return IPM_EOTHER;
+  }
+
+  fprintf(stderr, "[RANK %d] Local-logging to file '%s'.\n", task.taskid, filename);
+
+  size += xml_profile_header(f);
+  fflush(f);
+
+  //size += xml_task(f, &task, ipm_interval_htable[ipm_interval_switch]);
   size += xml_task(f, &task, ipm_htable);
   fflush(f);
 
