@@ -156,7 +156,7 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
   last_tstamp=tstop;
 #endif
   
-  IPM_HASHTABLE_ADD(idx,t);
+  IPM_HASHTABLE_ADD(idx,t,tstart);
   
 #ifdef HAVE_SNAP
  IPM_SNAP;

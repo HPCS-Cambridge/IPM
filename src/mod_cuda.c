@@ -127,7 +127,7 @@ void ipm_cuda_kerneltiming()
     KEY_SET_POINTER(key, rt_kernels[i].kernel);
     /* KEY_SET_DATATYPE(key, sid); */
     IPM_HASH_HKEY(ipm_htable, key, idx);
-    IPM_HASHTABLE_ADD(idx,(double)duration);
+    IPM_HASHTABLE_ADD(idx,(double)duration,-1.f);
 
     rt_kernels[i].kernel=0;
     cudaEventDestroy( rt_kernels[i].start );
@@ -180,7 +180,7 @@ void ipm_cuda_kerneltiming()
     KEY_SET_POINTER(key, dr_kernels[i].kernel);
     /* KEY_SET_DATATYPE(key, sid); */
     IPM_HASH_HKEY(ipm_htable, key, idx);
-    IPM_HASHTABLE_ADD(idx,(double)duration);
+    IPM_HASHTABLE_ADD(idx,(double)duration,-1.f);
 
     dr_kernels[i].kernel=0;
     cuEventDestroy( dr_kernels[i].start );

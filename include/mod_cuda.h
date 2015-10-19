@@ -158,7 +158,7 @@ extern cudaptr_t cudaptr[CUDA_MAXNUM_KERNELS];
     									\
     IPM_CUDA_KEY(key, CUDA_HOST_IDLE_ID_GLOBAL, 0, 0, regid, 0);	\
     IPM_HASH_HKEY(ipm_htable, key, idx);				\
-    IPM_HASHTABLE_ADD(idx,t3);						\
+    IPM_HASHTABLE_ADD(idx,t3,t1);					\
   }
     
 

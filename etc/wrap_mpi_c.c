@@ -143,7 +143,7 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
   last_tstamp=tstop;
 #endif
 
-  IPM_HASHTABLE_ADD(idx,t);
+  IPM_HASHTABLE_ADD(idx,t,tstart);
  
 #ifdef HAVE_SNAP
  IPM_SNAP;

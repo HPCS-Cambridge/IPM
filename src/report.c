@@ -45,31 +45,31 @@
 
 
 
-/* 
+/*
  * compute global statistics for hashtable statistics
- * - min of min 
+ * - min of min
  * - max of max
  * - sum of sum
  */
-void gstats_hent(ipm_hent_t hent, gstats_t *global) 
+void gstats_hent(ipm_hent_t hent, gstats_t *global)
 {
 #ifdef HAVE_MPI
-  IPM_REDUCE( &hent.t_tot, &(global->dmin), 1, 
+  IPM_REDUCE( &hent.t_tot, &(global->dmin), 1,
 	      MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
-  
-  IPM_REDUCE( &hent.t_tot, &(global->dmax), 1, 
+
+  IPM_REDUCE( &hent.t_tot, &(global->dmax), 1,
 	      MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-  
-  IPM_REDUCE( &hent.t_tot, &(global->dsum), 1, 
+
+  IPM_REDUCE( &hent.t_tot, &(global->dsum), 1,
 	      MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-  IPM_REDUCE( &hent.count, &(global->nmin), 1, 
+  IPM_REDUCE( &hent.count, &(global->nmin), 1,
 	      IPM_COUNT_MPITYPE, MPI_MIN, 0, MPI_COMM_WORLD);
 
-  IPM_REDUCE( &hent.count, &(global->nmax), 1, 
+  IPM_REDUCE( &hent.count, &(global->nmax), 1,
 	      IPM_COUNT_MPITYPE, MPI_MAX, 0, MPI_COMM_WORLD);
 
-  IPM_REDUCE( &hent.count, &(global->nsum), 1, 
+  IPM_REDUCE( &hent.count, &(global->nsum), 1,
 	      IPM_COUNT_MPITYPE, MPI_SUM, 0, MPI_COMM_WORLD);
 /* on the cray with IPM_REPORT =full this causes a message
    flood and a crash - to prevent this put in a barrier
@@ -86,7 +86,7 @@ void gstats_hent(ipm_hent_t hent, gstats_t *global)
 }
 
 /* global statistics for a single double value */
-void gstats_double(double val, gstats_t *global) 
+void gstats_double(double val, gstats_t *global)
 {
 #ifdef HAVE_MPI
   IPM_REDUCE( &val, &(global->dmin), 1,
@@ -107,7 +107,7 @@ void gstats_double(double val, gstats_t *global)
 }
 
 /* global statistics for a single count */
-void gstats_count(IPM_COUNT_TYPE count, gstats_t *global) 
+void gstats_count(IPM_COUNT_TYPE count, gstats_t *global)
 {
 #ifdef HAVE_MPI
   IPM_REDUCE( &count, &(global->nmin), 1,
@@ -127,7 +127,7 @@ void gstats_count(IPM_COUNT_TYPE count, gstats_t *global)
 }
 
 
-void clear_region_stats(regstats_t *stats) 
+void clear_region_stats(regstats_t *stats)
 {
   int i;
 
@@ -154,7 +154,7 @@ void clear_region_stats(regstats_t *stats)
 
 
 
-void compute_local_region_stats(region_t *reg, regstats_t *stats, int incl, int first) 
+void compute_local_region_stats(region_t *reg, regstats_t *stats, int incl, int first)
 {
   int i, noreg;
   region_t * tmp;
@@ -163,24 +163,24 @@ void compute_local_region_stats(region_t *reg, regstats_t *stats, int incl, int 
   scanstats_t hmpi, hpio, homp, hompi;
   scanstats_t hcuda, hcublas, hcufft;
   ipm_hent_t hall[MAXSIZE_CALLTABLE];
-  
-  HENT_CLEAR(hmpi.hent);
-  HENT_CLEAR(hpio.hent);
-  HENT_CLEAR(homp.hent);
-  HENT_CLEAR(hompi.hent);
 
-  HENT_CLEAR(hcuda.hent);
-  HENT_CLEAR(hcublas.hent);
-  HENT_CLEAR(hcufft.hent);
+  HENT_INIT(hmpi.hent);
+  HENT_INIT(hpio.hent);
+  HENT_INIT(homp.hent);
+  HENT_INIT(hompi.hent);
+
+  HENT_INIT(hcuda.hent);
+  HENT_INIT(hcublas.hent);
+  HENT_INIT(hcufft.hent);
 
   /* is this for ipm_noregion? */
   noreg=0;
   if( reg==ipm_rstack->child && !incl )
     noreg=1;
-  
+
   for( i=0; i<MAXSIZE_CALLTABLE; i++ ) {
     stats->fullstats[i].activity=i;
-    HENT_CLEAR(hall[i]);
+    HENT_INIT(hall[i]);
   }
 
   scanspec_unrestrict_all(&spec);
@@ -197,54 +197,54 @@ void compute_local_region_stats(region_t *reg, regstats_t *stats, int incl, int 
   gflops = 0.0;
 #endif
 
-#ifdef HAVE_MPI  
-  scanspec_restrict_activity( &spec, 
+#ifdef HAVE_MPI
+  scanspec_restrict_activity( &spec,
 			      MPI_MINID_GLOBAL, MPI_MAXID_GLOBAL);
   htable_scan( ipm_htable, &hmpi, spec );
-#endif 
+#endif
 
 #ifdef HAVE_POSIXIO
-  scanspec_restrict_activity( &spec, 
+  scanspec_restrict_activity( &spec,
 			      POSIXIO_MINID_GLOBAL, POSIXIO_MAXID_GLOBAL);
   htable_scan( ipm_htable, &hpio, spec );
 #endif
 
 #ifdef HAVE_OMPTRACEPOINTS
-  scanspec_restrict_activity( &spec, 
+  scanspec_restrict_activity( &spec,
 			      OMP_PARALLEL_ID_GLOBAL, OMP_PARALLEL_ID_GLOBAL );
   htable_scan( ipm_htable, &homp, spec );
-  
-  scanspec_restrict_activity( &spec, 
+
+  scanspec_restrict_activity( &spec,
 			      OMP_IDLE_ID_GLOBAL, OMP_IDLE_ID_GLOBAL );
   htable_scan( ipm_htable, &hompi, spec );
-#endif 
+#endif
 
 #ifdef HAVE_CUDA
-  scanspec_restrict_activity( &spec, 
+  scanspec_restrict_activity( &spec,
 			      CUDA_MINID_GLOBAL, CUDA_MAXID_GLOBAL);
   htable_scan( ipm_htable, &hcuda, spec );
 #endif
 
 #ifdef HAVE_CUBLAS
-  scanspec_restrict_activity( &spec, 
+  scanspec_restrict_activity( &spec,
 			      CUBLAS_MINID_GLOBAL, CUBLAS_MAXID_GLOBAL);
   htable_scan( ipm_htable, &hcublas, spec );
 #endif
 
 #ifdef HAVE_CUFFT
-  scanspec_restrict_activity( &spec, 
+  scanspec_restrict_activity( &spec,
 			      CUFFT_MINID_GLOBAL, CUFFT_MAXID_GLOBAL);
   htable_scan( ipm_htable, &hcufft, spec );
 #endif
 
-  /* -- compute per-call local stats for full banner -- */ 
+  /* -- compute per-call local stats for full banner -- */
   if( task.flags&FLAG_REPORT_FULL )
     {
       scanspec_unrestrict_activity( &spec );
       htable_scan_full(ipm_htable, hall, spec);
-    }  
+    }
 
-  if( first ) 
+  if( first )
     {
       GSTATS_SET( stats->wallt, wallt, 1 );
       GSTATS_SET( stats->gflops, gflops, 1 );
@@ -260,10 +260,10 @@ void compute_local_region_stats(region_t *reg, regstats_t *stats, int incl, int 
       if( task.flags&FLAG_REPORT_FULL ) {
 	for( i=0; i<MAXSIZE_CALLTABLE; i++ ) {
 	  GSTATS_SET( stats->fullstats[i], hall[i].t_tot, hall[i].count );
-	}  
+	}
       }
     }
-  else 
+  else
     {
       /* wallt is already inclusive, so nothing to do here */
       /*  Appro
@@ -282,20 +282,33 @@ void compute_local_region_stats(region_t *reg, regstats_t *stats, int incl, int 
       if( task.flags&FLAG_REPORT_FULL ) {
 	for( i=0; i<MAXSIZE_CALLTABLE; i++ ) {
 	  GSTATS_ADD( stats->fullstats[i], hall[i].t_tot, hall[i].count );
-	}  
+	}
       }
     }
-    
+
   if( incl && reg!=ipm_rstack->child ) {
     tmp=reg->child;
     while(tmp) {
       compute_local_region_stats(tmp, stats, incl, 0);
       tmp=tmp->next;
     }
-  }  
+  }
+
+  // AT
+  HENT_CLEAR(hmpi.hent);
+  HENT_CLEAR(hpio.hent);
+  HENT_CLEAR(homp.hent);
+  HENT_CLEAR(hompi.hent);
+
+  HENT_CLEAR(hcuda.hent);
+  HENT_CLEAR(hcublas.hent);
+  HENT_CLEAR(hcufft.hent);
+  for( i = 0; i < MAXSIZE_CALLTABLE; i++) {
+    HENT_CLEAR(hall[i]);
+  }
 }
 
-void compute_region_stats(region_t *reg, regstats_t *stats, int incl) 
+void compute_region_stats(region_t *reg, regstats_t *stats, int incl)
 {
   int i, noreg;
   region_t *tmp;
@@ -316,7 +329,7 @@ void compute_region_stats(region_t *reg, regstats_t *stats, int incl)
   wallt  = stats->wallt.dsum;
   gflops = stats->gflops.dsum;
 
-  /* handle special case of walltime for 
+  /* handle special case of walltime for
      ipm_noregion */
   if( noreg ) {
     tmp=reg->child;
@@ -348,7 +361,7 @@ void compute_region_stats(region_t *reg, regstats_t *stats, int incl)
 
   hmpi.t_tot = stats->mpi.dsum;
   hmpi.count = stats->mpi.nsum;
-  
+
   hpio.t_tot = stats->pio.dsum;
   hpio.count = stats->pio.nsum;
 
@@ -371,7 +384,7 @@ void compute_region_stats(region_t *reg, regstats_t *stats, int incl)
     for( i=0; i<MAXSIZE_CALLTABLE; i++ ) {
       hall[i].t_tot = stats->fullstats[i].dsum;
       hall[i].count = stats->fullstats[i].nsum;
-    }  
+    }
   }
 
   /* -- compute global stats -- */
@@ -393,8 +406,24 @@ void compute_region_stats(region_t *reg, regstats_t *stats, int incl)
   if( task.flags&FLAG_REPORT_FULL ) {
     for( i=0; i<MAXSIZE_CALLTABLE; i++ ) {
       gstats_hent(hall[i], &(stats->fullstats[i]));
-    }  
+    }
   }
+
+  // AT
+  HENT_CLEAR(hmpi);
+  HENT_CLEAR(hpio);
+  HENT_CLEAR(homp);
+  HENT_CLEAR(hompi);
+
+  HENT_CLEAR(hcuda);
+  HENT_CLEAR(hcublas);
+  HENT_CLEAR(hcufft);
+  // Timestamps not used, so no cleaning necessary
+  // Also, hall not cleanly initialised so doing this loop without also initing
+  // hall first will call free() on random addresses. Nope.
+  /*for( i = 0; i < MAXSIZE_CALLTABLE; i++) {
+    HENT_CLEAR(hall[i]);
+  }*/
 }
 
 banner_t banner;
@@ -406,7 +435,7 @@ void ipm_banner(FILE *f)
   ipm_hent_t stats_omp;
   ipm_hent_t stats_ompi;
   double wallt, gflops, mpip, piop, ompp;
-  ipm_hent_t stats_all[MAXSIZE_CALLTABLE];  
+  ipm_hent_t stats_all[MAXSIZE_CALLTABLE];
   int i, j;
 
   for( i=0; i<MAXNUM_REGIONS; i++ )  {
@@ -417,7 +446,7 @@ void ipm_banner(FILE *f)
       }
   }
 
-  
+
   banner.flags=0;
 #ifdef HAVE_MPI
   banner.flags|=BANNER_HAVE_MPI;
@@ -437,8 +466,8 @@ void ipm_banner(FILE *f)
 #ifdef HAVE_CUFFT
   banner.flags|=BANNER_HAVE_CUFFT;
 #endif
-  
-  if( task.flags&FLAG_REPORT_FULL ) 
+
+  if( task.flags&FLAG_REPORT_FULL )
     {
       banner.flags|=BANNER_FULL;
       for( i=0; i<MAXSIZE_CALLTABLE; i++ ) {
@@ -447,7 +476,7 @@ void ipm_banner(FILE *f)
     }
 
   gstats_double( task.procmem, &(banner.procmem) );
-  
+
   /* --- compute statistics for whole app --- */
   clear_region_stats( &(banner.app) );
   compute_region_stats(ipm_rstack->child, &(banner.app), 1);
@@ -455,38 +484,38 @@ void ipm_banner(FILE *f)
   for( j=2; j<MAXNUM_REGIONS; j++ ) {
     region_t *reg=0;
     region_t *tmp=0;
-    
+
     reg = rstack_find_region_by_id(ipm_rstack, j);
     if( reg ) {
-      if( !((task.flags)&FLAG_NESTED_REGIONS) && 
+      if( !((task.flags)&FLAG_NESTED_REGIONS) &&
 	  reg->parent!=ipm_rstack->child ) {
 	continue;
       }
-      
+
       banner.regions[j].valid=1;
       strncpy(banner.regions[j].name, reg->name, MAXSIZE_REGLABEL);
-	
+
       /* record the nesting */
       tmp=reg;
       for( i=0; i<MAXNUM_REGNESTING; i++ ) {
-	if(!tmp || tmp==task.rstack) 
+	if(!tmp || tmp==task.rstack)
 	  break;
 	strncpy(banner.regions[j].nesting[i], tmp->name, MAXSIZE_REGLABEL);
 	tmp=tmp->parent;
       }
-      
+
       clear_region_stats( &(banner.regions[j]) );
-      compute_region_stats(reg, &(banner.regions[j]), 1);	
+      compute_region_stats(reg, &(banner.regions[j]), 1);
     }
-  } 
+  }
 
   /* --- compute statistics for ipm_noregion --- */
   clear_region_stats( &(banner.regions[1]) );
   compute_region_stats(ipm_rstack->child, &(banner.regions[1]), 0);
   sprintf(banner.regions[1].name, "ipm_noregion");
-  banner.regions[1].valid=1;  
-  
-  
+  banner.regions[1].valid=1;
+
+
 #ifdef HAVE_MPI
   PMPI_Barrier(MPI_COMM_WORLD);
 #endif
@@ -494,7 +523,7 @@ void ipm_banner(FILE *f)
   if( task.taskid==0 ) {
 
     banner.app.valid=1;
-    banner.app.name[0]='\0';    
+    banner.app.name[0]='\0';
 
     /* --- prepare banner with data from task 0 --- */
 

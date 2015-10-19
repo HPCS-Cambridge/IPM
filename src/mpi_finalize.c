@@ -29,7 +29,7 @@ int MPI_Finalize()
   csite=get_callsite_id();
 #else
   csite=0;
-#endif 
+#endif
 
   IPM_MPI_KEY(key, MPI_FINALIZE_ID_GLOBAL, 0, 0, 1, csite);
   IPM_HASH_HKEY(ipm_htable,key,idx);
@@ -54,6 +54,18 @@ int MPI_Finalize()
 #endif
 
   ipm_htable[idx].count++;
+  // AT: TODO - necessary? What's happening here, anyway? Also clean allocs
+  if( ipm_htable[idx].timestamps) {
+    ipm_htable[idx].timestamps = realloc(ipm_htable[idx].timestamps, sizeof(double) * ipm_htable[idx].count);
+  }
+  else {
+    ipm_htable[idx].timestamps = malloc(sizeof(double) *ipm_htable[idx].count);
+  }
+  if( !ipm_htable[idx].timestamps ) {
+    abort();
+  }
+  IPM_TIMESTAMP(ipm_htable[idx].timestamps[ipm_htable[idx].count-1]);
+  // END AT
   ipm_htable[idx].t_min=0.0;
   ipm_htable[idx].t_max=0.0;
   ipm_htable[idx].t_tot=0.0;
@@ -61,14 +73,14 @@ int MPI_Finalize()
 
 #ifdef HAVE_POSIXIO
   modules[IPM_MODULE_POSIXIO].state=STATE_NOTACTIVE;
-#endif 
-  
+#endif
+
 #ifndef DELAYED_MPI_FINALIZE
   ipm_finalize(0);
   rv = PMPI_Finalize();
   return rv;
 #endif /* DELAYED_MPI_FINALIZE */
-  
+
   return MPI_SUCCESS;
 }
 

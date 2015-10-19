@@ -100,7 +100,7 @@ __CRET__ __CFNAME__(__CPARAMS__)
   last_tstamp=tstop;
 #endif
 
-  IPM_HASHTABLE_ADD(idx,t);
+  IPM_HASHTABLE_ADD(idx,t,tstart);
 
   return rv;
 }

@@ -35,15 +35,15 @@ void ipm_mpi_init() {
 
   ipm_get_machtopo();
 
-  IPMDBG("ipm_mpi_init rank=%d size=%d\n", 
+  IPMDBG("ipm_mpi_init rank=%d size=%d\n",
 	 task.taskid, task.ntasks);
 
-  if( !(task.flags&FLAG_LOGWRITER_POSIXIO) && 
+  if( !(task.flags&FLAG_LOGWRITER_POSIXIO) &&
       !(task.flags&FLAG_LOGWRITER_MPIIO) ) {
-    
+
     if( task.ntasks<=256 )
       task.flags|=FLAG_LOGWRITER_POSIXIO;
-    else 
+    else
       task.flags|=FLAG_LOGWRITER_MPIIO;
   }
 
@@ -53,12 +53,12 @@ void ipm_mpi_init() {
 #else
   csite=0;
 #endif
- 
+
   IPM_MPI_KEY(key, MPI_INIT_ID_GLOBAL, 0, 0, 1, csite);
   IPM_HASH_HKEY(ipm_htable, key, idx);
 
 #ifdef HAVE_MPI_TRACE
-#ifdef HAVE_KEYHIST 
+#ifdef HAVE_KEYHIST
   KEYHIST_TRACE(task.tracefile,key);
 #else
   if( task.tracefile && task.tracestate) {
@@ -74,6 +74,18 @@ void ipm_mpi_init() {
 #endif
 
   ipm_htable[idx].count++;
+  // AT: TODO - necessary <yes!>? What's happening here, anyway?
+  if( ipm_htable[idx].timestamps) {
+    ipm_htable[idx].timestamps = realloc(ipm_htable[idx].timestamps, sizeof(double) * ipm_htable[idx].count);
+  }
+  else {
+    ipm_htable[idx].timestamps = malloc(sizeof(double) * ipm_htable[idx].count);
+  }
+  if( !ipm_htable[idx].timestamps ) {
+    abort();
+  }
+  IPM_TIMESTAMP(ipm_htable[idx].timestamps[ipm_htable[idx].count-1]);
+  // END AT
   ipm_htable[idx].t_min=0.0;
   ipm_htable[idx].t_max=0.0;
   ipm_htable[idx].t_tot=0.0;
@@ -88,7 +100,7 @@ void getargs(int* ac, char** av, int max_args)
   FILE* infile;
   char* arg_ptr;
   long fsize;
-  
+
   *ac = 0;
   *av = NULL;
   i=0; insize=256;
@@ -96,7 +108,7 @@ void getargs(int* ac, char** av, int max_args)
   pid = getpid();
   sprintf(file, "/proc/%d/cmdline", pid);
   infile = fopen(file, "r");
-  
+
   if( infile != NULL ) {
     while ( !feof(infile) ) {
       inbuf = IPM_MALLOC(4096);
@@ -110,7 +122,7 @@ void getargs(int* ac, char** av, int max_args)
       }
     }
     *ac = i;
-    
+
     if( inbuf ) IPM_FREE(inbuf);
     fclose(infile);
   }
@@ -123,11 +135,11 @@ int MPI_Init(int *argc, char ***argv)
   int myrank;
 
   ipm_init(0);
-  
+
   rv = PMPI_Init(argc, argv);
-  
+
   PMPI_Comm_rank( MPI_COMM_WORLD, &myrank);
-#if defined(HAVE_POSIXIO_TRACE) || defined(HAVE_MPI_TRACE) || defined(HAVE_OMP_TRACE) 
+#if defined(HAVE_POSIXIO_TRACE) || defined(HAVE_MPI_TRACE) || defined(HAVE_OMP_TRACE)
   if( !task.tracefile ) {
     sprintf(buf, "%s.trace.%d.txt", task.fname, myrank);
     task.tracestate=0;
@@ -138,7 +150,7 @@ int MPI_Init(int *argc, char ***argv)
 
 #if defined(HAVE_POSIXIO)
   modules[IPM_MODULE_POSIXIO].state=STATE_ACTIVE;
-#endif 
+#endif
 
   ipm_mpi_init();
 
@@ -154,7 +166,7 @@ int MPI_Init_thread(int *argc, char ***argv, int requested, int *provided)
   ipm_init(0);
 
   rv = PMPI_Init_thread(argc, argv, requested, provided);
-  
+
   PMPI_Comm_rank( MPI_COMM_WORLD, &myrank);
 #if defined(HAVE_POSIXIO_TRACE) || defined(HAVE_MPI_TRACE) || defined(HAVE_OMP_TRACE)
     if( !task.tracefile ) {
@@ -164,14 +176,14 @@ int MPI_Init_thread(int *argc, char ***argv, int requested, int *provided)
     task.tracestate=1;
   }
 #endif
-  
+
   ipm_mpi_init();
 
-  return rv;  
+  return rv;
 }
 
 void MPI_INIT_F(int* ierr)
-{ 
+{
   int argc;
   char **argv[32];
   static char *name="./foo";
@@ -180,16 +192,16 @@ void MPI_INIT_F(int* ierr)
   argc=1;
   argv[0]=&name;
   *ierr = MPI_Init(&argc, argv);
-#else 
+#else
   ipm_init(0);
-  PMPI_INIT_F(ierr); 
+  PMPI_INIT_F(ierr);
   ipm_mpi_init();
 #endif  /* FINIT_CALLS_CINIT */
 }
 
 
 void MPI_INIT_THREAD_F(int *request, int *provide, int *ierr)
-{ 
+{
   int argc;
   char **argv[32];
   static char *name="./foo";
@@ -198,9 +210,9 @@ void MPI_INIT_THREAD_F(int *request, int *provide, int *ierr)
   argc=1;
   argv[0]=&name;
   *ierr = MPI_Init_thread(&argc, argv, *request, provide);
-#else 
+#else
   ipm_init(0);
-  PMPI_INIT_THREAD_F(ierr); 
+  PMPI_INIT_THREAD_F(ierr);
   ipm_mpi_init();
 #endif  /* FINIT_CALLS_CINIT */
 }

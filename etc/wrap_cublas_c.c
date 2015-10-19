@@ -135,7 +135,7 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
 
   /* update htable */
   IPM_HASH_HKEY(ipm_htable, key, idx);
-  IPM_HASHTABLE_ADD(idx,t);
+  IPM_HASHTABLE_ADD(idx,t,tstart);
   
 #if __RETURN_VALUE__
     return rv;
