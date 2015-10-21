@@ -148,7 +148,7 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
   IPM_HASHTABLE_ADD(idx,t,tstart);
   IPM_INTERVAL_HASHTABLE_ADD(htable_switch,idx,t,tstart);
 
-  if(ipm_call_count == 25) {
+  if( task.flags&FLAG_REPORT_INTERVAL && ipm_call_count == 25 ) {
     int oldinterval;
     /* For now just a useless mutex lock (as a test). Will become useful (probably, maybe
      * not here) when log writer thread is enabled/implemented. */
