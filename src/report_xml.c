@@ -855,6 +855,21 @@ int xml_task(void *ptr, taskdata_t *td, ipm_hent_t *htab)
   return res;
 }
 
+/* Print only partial output to task file  */
+int xml_task_interval(void *ptr, taskdata_t *td, ipm_hent_t *htab)
+{
+  region_t *ipm_main;
+  int i, res;
+
+  /* td->rstack->child is ipm_main */
+  ipm_main = td->rstack->child;
+
+  res=0;
+  res += xml_hash(ptr, td, htab);
+
+  return res;
+}
+
 #ifdef HAVE_CLUSTERING
 int xml_taskcopy(void *ptr, procstats_t *stats)
 {
@@ -958,14 +973,14 @@ int report_xml_atinterval(unsigned long flags, int interval)
   }
 
 
-  size += xml_profile_header(f);
+  //size += xml_profile_header(f);
+  //fflush(f);
+
+  size += xml_task_interval(f, &task, ipm_interval_htable[interval]);
   fflush(f);
 
-  size += xml_task(f, &task, ipm_interval_htable[interval]);
-  fflush(f);
-
-  size += xml_profile_footer(f);
-  fflush(f);
+  //size += xml_profile_footer(f);
+  //fflush(f);
 
   return IPM_OK;
 }
