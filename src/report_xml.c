@@ -712,8 +712,9 @@ int xml_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
 
       call  = KEY_GET_ACTIVITY(htab[i].key);
 
+      /* AT - FIXME: This always evaluates to false... */
       /* restrict to calls of interest */
-      if( 0
+      if( 1
 #ifdef HAVE_MPI
 	 && (call<MPI_MINID_GLOBAL || call>MPI_MAXID_GLOBAL)
 #endif
@@ -784,10 +785,6 @@ int xml_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
 
       /*
        * AT: move tot/min/max to separate subtag, and add timestamps tag
-       * TODO - print actual timestamps (tstamp - t_start) instead of just
-       * t_start.
-       *
-       * NOTE: <t> is unique per process. (TODO verify)
        */
       res += ipm_printf(ptr, " >\n");
 
@@ -799,11 +796,8 @@ int xml_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
 
       res += ipm_printf(ptr, "<timestamps>");
 
-      // AT - TODO: This if shouldn't be necessary (but keep for safeguarding?)
-      if (htab[i].count) {
-        for ( j = 0; j < htab[i].count; j++ ) {
-          res += ipm_printf(ptr, "%.6f ", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
-        }
+      for ( j = 0; j < htab[i].count; j++ ) {
+        res += ipm_printf(ptr, "%.6f ", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
       }
 
       res += ipm_printf(ptr, "</timestamps>\n");
@@ -855,21 +849,6 @@ int xml_task(void *ptr, taskdata_t *td, ipm_hent_t *htab)
   return res;
 }
 
-/* Print only partial output to task file  */
-int xml_task_interval(void *ptr, taskdata_t *td, ipm_hent_t *htab)
-{
-  region_t *ipm_main;
-  int i, res;
-
-  /* td->rstack->child is ipm_main */
-  ipm_main = td->rstack->child;
-
-  res=0;
-  res += xml_hash(ptr, td, htab);
-
-  return res;
-}
-
 #ifdef HAVE_CLUSTERING
 int xml_taskcopy(void *ptr, procstats_t *stats)
 {
@@ -911,10 +890,10 @@ void report_set_filename()
 }
 
 
-/* FIXME - do some actual fi*/
+/* FIXME - accept input? Also do not hard-code /tmp/ */
 void report_set_ranked_filename(char *filename)
 {
-  sprintf(filename, "%s/%s-RANK%d.ipm.xml", task.logdir, task.fname, task.taskid);
+  sprintf(filename, "/tmp/%s/%s-RANK%d.tmp", task.logdir, task.fname, task.taskid);
 }
 
 
@@ -952,6 +931,9 @@ int report_xml_local(unsigned long flags)
 }
 
 
+// AT: TODO - better error checking (because existing fopen check doesn't
+// always work/flcose check is ugly; rename (no xml), prettify, remove unused
+// code, move to own .c file
 int report_xml_atinterval(unsigned long flags, int interval)
 {
   FILE *f;
@@ -966,21 +948,18 @@ int report_xml_atinterval(unsigned long flags, int interval)
 
   report_set_ranked_filename(filename);
 
-  f=fopen(filename, "a");
+  f=fopen(filename, "w");
   if(!f) {
     IPMERR("[RANK %d] Could not open IPM log file: '%s'\n", task.taskid ,filename);
     return IPM_EOTHER;
   }
 
-
-  //size += xml_profile_header(f);
-  //fflush(f);
-
-  size += xml_task_interval(f, &task, ipm_interval_htable[interval]);
-  fflush(f);
-
-  //size += xml_profile_footer(f);
-  //fflush(f);
+  size += task_print_hash(f, &task, ipm_interval_htable[interval]);
+  
+  if(fclose(f)) {
+    fprintf(stderr, "fclose failed\n");
+    abort();
+  }
 
   return IPM_OK;
 }
@@ -1309,3 +1288,33 @@ int report_xml_mpiio(unsigned long flags)
   return IPM_OK;
 }
 #endif /* HAVE_MPI */
+
+/* Stripped down to bare necessities for testing purposes.
+ * TODO: rebuild based on xml_hash().
+ */
+int task_print_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
+  int i, j, call, res;
+  char buf[80];
+
+  res=0;
+
+  for( i=0; i<MAXSIZE_HASH; i++ ) {
+      if( htab[i].count==0 ) {
+        continue;
+      }
+
+      call  = KEY_GET_ACTIVITY(htab[i].key);
+      KEY_SPRINT(buf, htab[i].key);
+      
+      ipm_printf(ptr, "%s,%s,%d", buf, ipm_calltable[call].name, htab[i].count);
+
+      for ( j = 0; j < htab[i].count; j++ ) {
+        res += ipm_printf(ptr, ",%.6f", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
+      }
+
+      res += ipm_printf(ptr, "\n");
+    }
+
+  return res;
+}
+

@@ -148,8 +148,14 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
   IPM_HASHTABLE_ADD(idx,t,tstart);
   IPM_INTERVAL_HASHTABLE_ADD(htable_switch,idx,t,tstart);
 
-  if( task.flags&FLAG_REPORT_INTERVAL && ipm_call_count == 25 ) {
+  //if( task.flags&FLAG_REPORT_INTERVAL && ipm_call_count == 150 ) {
+  // AT - TODO: prettify/use IPM_TIMESTAMP.
+  struct timeval tv;
+  gettimeofday(&tv, 0);
+    //fprintf(stderr, "(MPI) Time: %f -> %f\n", IPM_TIMEVAL(task.t_start), IPM_TIMEVAL(tv));
+  if( task.flags&FLAG_REPORT_INTERVAL && IPM_TIMEVAL(tv) - t_interval >= 5) {
     int oldinterval;
+    t_interval = IPM_TIMEVAL(tv);
     /* For now just a useless mutex lock (as a test). Will become useful (probably, maybe
      * not here) when log writer thread is enabled/implemented. */
     //pthread_mutex_lock(&htable_mutex);

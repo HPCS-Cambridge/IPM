@@ -53,11 +53,12 @@ typedef struct scanstat
   double bytesum;
 } scanstats_t;
 
-
+// AT - TODO: Move interval stuff to own header/src or at least place logically
 extern ipm_hent_t ipm_htable[MAXSIZE_HASH];
 extern ipm_hent_t ipm_interval_htable[2][MAXSIZE_HASH];
 extern int ipm_hspace;
 extern int ipm_call_count;
+extern double t_interval;
 extern int htable_switch;
 extern pthread_mutex_t htable_mutex;
 

@@ -119,6 +119,7 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
   __GET_BYTES__(bytes);
 
   csite=0;
+  ipm_call_count++;
 #ifdef HAVE_CALLPATH
   /* csite=get_callsite_id(); */
 #endif 
@@ -147,6 +148,7 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
   IPM_POSIXIO_KEY(key, __CFID___GLOBAL, 0, bytes, regid, csite);
 
   IPM_HASH_HKEY(ipm_htable, key, idx);
+  IPM_HASH_HKEY(ipm_interval_htable[htable_switch], key, idx);
 
 #ifdef HAVE_KEYHIST
   IPM_XHASH_HKEY(ipm_xhtable,last_hkey,key,idx2);
@@ -157,6 +159,21 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
 #endif
   
   IPM_HASHTABLE_ADD(idx,t,tstart);
+  IPM_INTERVAL_HASHTABLE_ADD(htable_switch,idx,t,tstart);
+
+  struct timeval tv;
+  gettimeofday(&tv, 0);
+  if( task.flags&FLAG_REPORT_INTERVAL && IPM_TIMEVAL(tv) - t_interval >= 5) {
+    t_interval = IPM_TIMEVAL(tv);
+    int oldinterval;
+    oldinterval = htable_switch;
+    htable_switch ? htable_switch-- : htable_switch++;
+    ipm_call_count = 0;
+    for(int i = 0; i < MAXSIZE_HASH; i++) {
+      HENT_CLEAR(ipm_interval_htable[htable_switch][i]);
+    }
+    report_xml_atinterval(0, oldinterval);
+  }
   
 #ifdef HAVE_SNAP
  IPM_SNAP;

@@ -80,6 +80,9 @@ int ipm_state=STATE_NOTINIT;
 int ipm_in_fortran_pmpi=0;
 #endif
 
+// AT - TODO: own file, or more logical place.
+double t_interval;
+
 void ipm_atexit_handler();
 void ipm_sig_handler(int sig);
 void ipm_write_profile_log();
@@ -136,6 +139,9 @@ int ipm_init(int flags)
   for( i=0; i<MAXNUM_MODULES; i++ ) {
     ipm_module_init( &(modules[i]) );
   }
+
+  // AT - TODO: own file or better location
+  t_interval = IPM_TIMEVAL(task.t_start);
 
   /* --- initialize modules --- */
 
