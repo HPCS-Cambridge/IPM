@@ -361,7 +361,6 @@ int ipm_finalize(int flags)
   // AT: Clear alloc'd timestamp memory from global htable.
   for( i = 0; i < MAXSIZE_HASH; i++ ) {
     HENT_CLEAR(ipm_htable[i]);
-    HENT_CLEAR(ipm_interval_htable[htable_switch][i]);
   }
 
   return IPM_OK;

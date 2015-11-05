@@ -9,7 +9,6 @@
 /* ---- global variables ----- */
 
 ipm_hent_t ipm_htable[MAXSIZE_HASH];
-ipm_hent_t ipm_interval_htable[2][MAXSIZE_HASH] = {0};
 int ipm_hspace; /* space remaining in hash */
 int htable_switch;
 int ipm_call_count;

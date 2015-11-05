@@ -934,7 +934,7 @@ int report_xml_local(unsigned long flags)
 // AT: TODO - better error checking (because existing fopen check doesn't
 // always work/flcose check is ugly; rename (no xml), prettify, remove unused
 // code, move to own .c file
-int report_xml_atinterval(unsigned long flags, int interval)
+int report_xml_atinterval(unsigned long flags, int completelyirrelevant)
 {
   FILE *f;
   char buf[80];
@@ -954,7 +954,7 @@ int report_xml_atinterval(unsigned long flags, int interval)
     return IPM_EOTHER;
   }
 
-  size += task_print_hash(f, &task, ipm_interval_htable[interval]);
+  size += task_print_hash(f, &task, ipm_htable);
   
   if(fclose(f)) {
     fprintf(stderr, "fclose failed\n");
@@ -1299,7 +1299,7 @@ int task_print_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
   res=0;
 
   for( i=0; i<MAXSIZE_HASH; i++ ) {
-      if( htab[i].count==0 ) {
+      if( htab[i].it_count==0 ) {
         continue;
       }
 
@@ -1308,7 +1308,7 @@ int task_print_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
       
       ipm_printf(ptr, "%s,%s,%d", buf, ipm_calltable[call].name, htab[i].count);
 
-      for ( j = 0; j < htab[i].count; j++ ) {
+      for ( j = htab[i].it_count - 1; j < htab[i].count; j++ ) {
         res += ipm_printf(ptr, ",%.6f", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
       }
 

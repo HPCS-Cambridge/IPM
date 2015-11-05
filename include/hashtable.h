@@ -16,12 +16,14 @@ typedef struct ipm_hent
   double t_min, t_max, t_tot;
   double *timestamps;
   IPM_COUNT_TYPE count;
+  IPM_COUNT_TYPE it_count;
   IPM_KEY_TYPE   key;
 } ipm_hent_t;
 
 
 #define HENT_INIT(hent_)   \
   hent_.count=0;	   \
+  hent_.it_count=0;	   \
   hent_.t_min=0.0;	   \
   hent_.t_max=0.0;	   \
   hent_.t_tot=0.0;	   \
@@ -30,6 +32,7 @@ typedef struct ipm_hent
 
 #define HENT_CLEAR(hent_)    \
   hent_.count=0;	     \
+  hent_.it_count=0;	     \
   hent_.t_min=0.0;	     \
   hent_.t_max=0.0;	     \
   hent_.t_tot=0.0;	     \
@@ -55,7 +58,6 @@ typedef struct scanstat
 
 // AT - TODO: Move interval stuff to own header/src or at least place logically
 extern ipm_hent_t ipm_htable[MAXSIZE_HASH];
-extern ipm_hent_t ipm_interval_htable[2][MAXSIZE_HASH];
 extern int ipm_hspace;
 extern int ipm_call_count;
 extern double t_interval;
@@ -76,6 +78,7 @@ extern IPM_KEY_TYPE last_hkey;
       if( (ipm_hspace>0) && KEY_ISNULL(htable_[idx_].key) ) {	\
 	KEY_ASSIGN( htable_[idx_].key, key_);			\
 	htable_[idx_].count = 0;				\
+	htable_[idx_].it_count = 0;				\
 	htable_[idx_].timestamps = NULL;			\
 	htable_[idx_].t_tot = 0.0;				\
 	htable_[idx_].t_min = 1.0e15;				\
@@ -141,6 +144,9 @@ extern IPM_KEY_TYPE last_hkey;
   {								\
     if( idx_>= 0 && idx_ < MAXSIZE_HASH ) {			\
       ipm_htable[idx_].count++;					\
+      if (!ipm_htable[idx_].it_count) {            \
+        ipm_htable[idx_].it_count = ipm_htable[idx_].count;					\
+      }                             \
       ipm_htable[idx_].t_tot+=t_;				\
       if( ipm_htable[idx_].timestamps ) {   \
         ipm_htable[idx_].timestamps = realloc(ipm_htable[idx_].timestamps, sizeof(double) * ipm_htable[idx_].count);   \
