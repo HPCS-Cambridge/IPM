@@ -930,11 +930,12 @@ int report_xml_local(unsigned long flags)
   return IPM_OK;
 }
 
-
+// AT: TODO place correctly
+int task_print_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab);
 // AT: TODO - better error checking (because existing fopen check doesn't
 // always work/flcose check is ugly; rename (no xml), prettify, remove unused
 // code, move to own .c file
-int report_xml_atinterval(unsigned long flags, int completelyirrelevant)
+int report_xml_atinterval(void)
 {
   FILE *f;
   char buf[80];
@@ -943,7 +944,6 @@ int report_xml_atinterval(unsigned long flags, int completelyirrelevant)
   char filename[80];
 
   print_selector=PRINT_TO_FILE;
-  print_flags=flags;
   size=0;
 
   report_set_ranked_filename(filename);
@@ -1306,7 +1306,7 @@ int task_print_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
       call  = KEY_GET_ACTIVITY(htab[i].key);
       KEY_SPRINT(buf, htab[i].key);
       
-      ipm_printf(ptr, "%s,%s,%d", buf, ipm_calltable[call].name, htab[i].count);
+      ipm_printf(ptr, "%s,%s,%d", buf, ipm_calltable[call].name, (htab[i].count - htab[i].it_count) + 1);
 
       for ( j = htab[i].it_count - 1; j < htab[i].count; j++ ) {
         res += ipm_printf(ptr, ",%.6f", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
