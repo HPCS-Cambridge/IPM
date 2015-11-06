@@ -10,9 +10,7 @@
 
 ipm_hent_t ipm_htable[MAXSIZE_HASH];
 int ipm_hspace; /* space remaining in hash */
-int htable_switch;
 int ipm_call_count;
-pthread_mutex_t htable_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
 void htable_init(ipm_hent_t *table)

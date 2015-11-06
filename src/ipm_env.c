@@ -26,6 +26,8 @@ extern char **environ;
 #endif
 #define ENV_NESTED_REGIONS 9
 #define ENV_REPORT_INTERVAL  10
+#define ENV_INTERVAL_CALL  11
+#define ENV_INTERVAL_TIME  12
 
 
 #define MAXSIZE_ENVKEY  120
@@ -99,6 +101,16 @@ int ipm_get_env()
    /* IPM_REPORT_INTERVAL */
     else if(!strcmp("IPM_REPORT_INTERVAL", key)) {
       ipm_check_env(ENV_REPORT_INTERVAL, val);
+    }
+    
+   /* IPM_INTERVAL_CALL */
+    else if(!strcmp("IPM_INTERVAL_CALL", key)) {
+      ipm_check_env(ENV_INTERVAL_CALL, val);
+    }
+    
+   /* IPM_INTERVAL_TIME */
+    else if(!strcmp("IPM_INTERVAL_TIME", key)) {
+      ipm_check_env(ENV_INTERVAL_TIME, val);
     }
     
     /* IPM_LOG none|terse|full */
@@ -213,9 +225,31 @@ int ipm_check_env(int env, char *val)
       break;
 
     case ENV_REPORT_INTERVAL:
-      if(!strncmp(val,"true",4) || !strncmp(val,"TRUE",4)) {
+      if(!strncmp(val,"time",4) || !strncmp(val,"TIME",4)) {
           task.flags |= FLAG_REPORT_INTERVAL;
+          task.flags |= FLAG_INTERVAL_TIME;
+          if (!IPM_TIME_INTERVAL) {
+            IPM_TIME_INTERVAL = 60.;
+          }
       }
+      else if(!strncmp(val,"call",4) || !strncmp(val,"CALL",4)) {
+          task.flags |= FLAG_REPORT_INTERVAL;
+          task.flags |= FLAG_INTERVAL_CALL;
+          if (!IPM_CALL_INTERVAL) {
+            IPM_CALL_INTERVAL = 100;
+          }
+      }
+      else {
+          IPMERR("Unrecognized value for IPM_REPORT_INTERVAL '%s', ignoring\n", val);
+      }
+      break;
+
+    case ENV_INTERVAL_CALL:
+      IPM_TIME_INTERVAL = atoi(val);
+      break;
+
+    case ENV_INTERVAL_TIME:
+      IPM_TIME_INTERVAL = atof(val);
       break;
 
     case ENV_LOGDIR:

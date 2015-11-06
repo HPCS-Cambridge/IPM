@@ -119,7 +119,7 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
   __GET_BYTES__(bytes);
 
   csite=0;
-  ipm_call_count++;
+
 #ifdef HAVE_CALLPATH
   /* csite=get_callsite_id(); */
 #endif 
@@ -159,16 +159,41 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
   
   IPM_HASHTABLE_ADD(idx,t,tstart);
 
-  struct timeval tv;
-  gettimeofday(&tv, 0);
-  if( task.flags&FLAG_REPORT_INTERVAL && IPM_TIMEVAL(tv) - t_interval >= 5) {
-    t_interval = IPM_TIMEVAL(tv);
-    ipm_call_count = 0;
-    report_xml_atinterval(0, 0);
-    for(int i = 0; i < MAXSIZE_HASH; i++) {
-      ipm_htable[i].it_count = 0;
+  // AT - Interval report
+
+  if( task.flags & FLAG_REPORT_INTERVAL ) {
+    // TODO - faster alt for gettimeofday?
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    ipm_call_count++;
+
+    if( (task.flags & FLAG_INTERVAL_CALL &&
+          ipm_call_count == IPM_CALL_INTERVAL) ||
+        (task.flags & FLAG_INTERVAL_TIME &&
+         IPM_TIMEVAL(tv) - t_interval >= IPM_TIME_INTERVAL) ) {
+
+      /* Need to reset these values before we dump the output -
+       * report_xml_atinterval calls POSIX IO, meaning we'll otherwise have an
+       * infinite loop here if we track those calls. This in turn causes a stack
+       * overflow / too many open files.
+       *
+       * TODO: find a way to avoid this issue?
+       */
+      t_interval = IPM_TIMEVAL(tv);
+      ipm_call_count = 0;
+
+      report_xml_atinterval();
+      for(int i = 0; i < MAXSIZE_HASH; i++) {
+        ipm_htable[i].it_count = 0;
+      }
+
+      // Compensate for time spent dumping output - TODO necessary?
+      gettimeofday(&tv, 0);
+      t_interval = IPM_TIMEVAL(tv);
     }
   }
+
+  // END AT
   
 #ifdef HAVE_SNAP
  IPM_SNAP;

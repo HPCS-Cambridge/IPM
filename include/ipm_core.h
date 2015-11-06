@@ -39,16 +39,23 @@
 /* report nested regions? */
 #define FLAG_NESTED_REGIONS       (0x0000000000000001ULL <<  12)
 
-/* report at intervals */
+/* AT - report at intervals */
 #define FLAG_REPORT_INTERVAL        (0x0000000000000001ULL <<  13)
+#define FLAG_INTERVAL_TIME        (0x0000000000000001ULL <<  14)
+#define FLAG_INTERVAL_CALL        (0x0000000000000001ULL <<  15)
 
+/* AT - temp. find better place / names. */
+extern double IPM_TIME_INTERVAL;
+extern unsigned int IPM_CALL_INTERVAL;
 
 /* clear all REPORT bits */
 #define FLAG_CLEAR_REPORT(flags_)	\
   flags_ &= ~FLAG_REPORT_NONE;		\
   flags_ &= ~FLAG_REPORT_TERSE;		\
   flags_ &= ~FLAG_REPORT_FULL;    \
-  flags_ &= ~FLAG_REPORT_INTERVAL;
+  flags_ &= ~FLAG_REPORT_INTERVAL;\
+  flags_ &= ~FLAG_INTERVAL_TIME;  \
+  flags_ &= ~FLAG_INTERVAL_CALL;
 
 
 /* clear all LOG bits */

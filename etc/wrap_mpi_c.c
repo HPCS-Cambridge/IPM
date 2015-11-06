@@ -56,7 +56,6 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
   t=tstop-tstart;
   
   bytes=0; irank=0;
-  ipm_call_count++;
   
   __GET_BYTES__(bytes); 
   __GET_RANK__(irank);
@@ -146,23 +145,41 @@ void IPM___CFNAME__(__CPARAMS__, double tstart, double tstop)
 
   IPM_HASHTABLE_ADD(idx,t,tstart);
 
-  //if( task.flags&FLAG_REPORT_INTERVAL && ipm_call_count == 150 ) {
-  // AT - TODO: prettify/use IPM_TIMESTAMP.
-  struct timeval tv;
-  gettimeofday(&tv, 0);
-    //fprintf(stderr, "(MPI) Time: %f -> %f\n", IPM_TIMEVAL(task.t_start), IPM_TIMEVAL(tv));
-  if( task.flags&FLAG_REPORT_INTERVAL && IPM_TIMEVAL(tv) - t_interval >= 5) {
-    t_interval = IPM_TIMEVAL(tv);
-    /* For now just a useless mutex lock (as a test). Will become useful (probably, maybe
-     * not here) when log writer thread is enabled/implemented. */
-    //pthread_mutex_lock(&htable_mutex);
-    ipm_call_count = 0;
-    report_xml_atinterval(0, 0);
-    for(int i = 0; i < MAXSIZE_HASH; i++) {
-      ipm_htable[i].it_count = 0;
+  // AT - Interval report
+
+  if( task.flags & FLAG_REPORT_INTERVAL ) {
+    // TODO - faster alt for gettimeofday?
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    ipm_call_count++;
+
+    if( (task.flags & FLAG_INTERVAL_CALL &&
+          ipm_call_count == IPM_CALL_INTERVAL) ||
+        (task.flags & FLAG_INTERVAL_TIME &&
+         IPM_TIMEVAL(tv) - t_interval >= IPM_TIME_INTERVAL) ) {
+
+      /* Need to reset these values before we dump the output -
+       * report_xml_atinterval calls POSIX IO, meaning we'll otherwise have an
+       * infinite loop here if we track those calls. This in turn causes a stack
+       * overflow / too many open files.
+       *
+       * TODO: find a way to avoid this issue?
+       */
+      t_interval = IPM_TIMEVAL(tv);
+      ipm_call_count = 0;
+
+      report_xml_atinterval();
+      for(int i = 0; i < MAXSIZE_HASH; i++) {
+        ipm_htable[i].it_count = 0;
+      }
+
+      // Compensate for time spent dumping output
+      gettimeofday(&tv, 0);
+      t_interval = IPM_TIMEVAL(tv);
     }
-    //pthread_mutex_unlock(&htable_mutex);
   }
+
+  // END AT
  
 #ifdef HAVE_SNAP
  IPM_SNAP;

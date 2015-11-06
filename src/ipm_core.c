@@ -82,6 +82,8 @@ int ipm_in_fortran_pmpi=0;
 
 // AT - TODO: own file, or more logical place.
 double t_interval;
+double IPM_TIME_INTERVAL = 0.0;
+unsigned int IPM_CALL_INTERVAL = 0;
 
 void ipm_atexit_handler();
 void ipm_sig_handler(int sig);
@@ -102,7 +104,6 @@ int ipm_init(int flags)
   ipm_state=STATE_IN_INIT;
 
   ipm_call_count = 0;
-  htable_switch = 0;
 
   /* check if IPM_TARGET is set and if it is,
      only monitor matching processes */
@@ -128,9 +129,6 @@ int ipm_init(int flags)
   t_init = ipm_wtime();
   taskdata_init(&task);
   htable_init(ipm_htable);
-  //htable_init(ipm_interval_htable[htable_switch]);
-  //ipm_interval_htable[0] = {0};
-  //ipm_interval_htable[1] = {0};
 
   /* need to get env variables before modules init */
   ipm_get_env();
