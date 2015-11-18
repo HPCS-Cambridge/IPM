@@ -28,6 +28,7 @@ extern char **environ;
 #define ENV_REPORT_INTERVAL  10
 #define ENV_INTERVAL_CALL  11
 #define ENV_INTERVAL_TIME  12
+#define ENV_REPORT_TIMESTAMPS  13
 
 
 #define MAXSIZE_ENVKEY  120
@@ -111,6 +112,11 @@ int ipm_get_env()
    /* IPM_INTERVAL_TIME */
     else if(!strcmp("IPM_INTERVAL_TIME", key)) {
       ipm_check_env(ENV_INTERVAL_TIME, val);
+    }
+    
+   /* IPM_REPORT_TIMESTAMPS */
+    else if(!strcmp("IPM_REPORT_TIMESTAMPS", key)) {
+      ipm_check_env(ENV_REPORT_TIMESTAMPS, val);
     }
     
     /* IPM_LOG none|terse|full */
@@ -250,6 +256,15 @@ int ipm_check_env(int env, char *val)
 
     case ENV_INTERVAL_TIME:
       IPM_TIME_INTERVAL = atof(val);
+      break;
+
+    case ENV_REPORT_TIMESTAMPS:
+      if(!strncmp(val,"true",4) || !strncmp(val,"TRUE",4)) {
+        task.flags |= FLAG_REPORT_TIMESTAMPS;
+      }
+      else if(!strncmp(val,"false",5) || !strncmp(val,"FALSE",5)) {
+        task.flags &= ~FLAG_REPORT_TIMESTAMPS;
+      }
       break;
 
     case ENV_LOGDIR:

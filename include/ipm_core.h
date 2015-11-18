@@ -40,9 +40,11 @@
 #define FLAG_NESTED_REGIONS       (0x0000000000000001ULL <<  12)
 
 /* AT - report at intervals */
-#define FLAG_REPORT_INTERVAL        (0x0000000000000001ULL <<  13)
+#define FLAG_REPORT_INTERVAL      (0x0000000000000001ULL <<  13)
 #define FLAG_INTERVAL_TIME        (0x0000000000000001ULL <<  14)
 #define FLAG_INTERVAL_CALL        (0x0000000000000001ULL <<  15)
+
+#define FLAG_REPORT_TIMESTAMPS    (0x0000000000000001ULL <<  16)
 
 /* AT - temp. find better place / names. */
 extern double IPM_TIME_INTERVAL;

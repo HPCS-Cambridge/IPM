@@ -794,13 +794,15 @@ int xml_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
 
       res += ipm_printf(ptr, "</timings>\n");
 
-      res += ipm_printf(ptr, "<timestamps>");
+      if (task.flags&FLAG_REPORT_TIMESTAMPS) {
+        res += ipm_printf(ptr, "<timestamps>");
 
-      for ( j = 0; j < htab[i].count; j++ ) {
-        res += ipm_printf(ptr, "%.6f ", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
+        for ( j = 0; j < htab[i].count; j++ ) {
+          res += ipm_printf(ptr, "%.6f ", htab[i].timestamps[j] - IPM_TIMEVAL(t->t_start));
+        }
+
+        res += ipm_printf(ptr, "</timestamps>\n");
       }
-
-      res += ipm_printf(ptr, "</timestamps>\n");
 
       res += ipm_printf(ptr, "</hent>\n");
     }
