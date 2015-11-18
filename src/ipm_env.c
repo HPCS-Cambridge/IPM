@@ -29,6 +29,7 @@ extern char **environ;
 #define ENV_INTERVAL_CALL  11
 #define ENV_INTERVAL_TIME  12
 #define ENV_REPORT_TIMESTAMPS  13
+#define ENV_INTERVAL_LOGDIR 14
 
 
 #define MAXSIZE_ENVKEY  120
@@ -117,6 +118,11 @@ int ipm_get_env()
    /* IPM_REPORT_TIMESTAMPS */
     else if(!strcmp("IPM_REPORT_TIMESTAMPS", key)) {
       ipm_check_env(ENV_REPORT_TIMESTAMPS, val);
+    }
+    
+   /* IPM_INTERVAL_LOGDIR */
+    else if(!strcmp("IPM_INTERVAL_LOGDIR", key)) {
+      ipm_check_env(ENV_INTERVAL_LOGDIR, val);
     }
     
     /* IPM_LOG none|terse|full */
@@ -265,6 +271,15 @@ int ipm_check_env(int env, char *val)
       else if(!strncmp(val,"false",5) || !strncmp(val,"FALSE",5)) {
         task.flags &= ~FLAG_REPORT_TIMESTAMPS;
       }
+      break;
+
+    case ENV_INTERVAL_LOGDIR:
+      if(!(interval_logdir = malloc(strlen(val) * sizeof(char)))) {
+        IPMERR("Could not allocate memory for interval_logdir, exiting...");
+        IPM_Abort(MPI_COMM_WORLD, -1); // AT - TODO: Error code, better exit?
+      }
+
+      strcpy(interval_logdir, val);
       break;
 
     case ENV_LOGDIR:

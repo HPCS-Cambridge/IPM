@@ -895,7 +895,13 @@ void report_set_filename()
 /* FIXME - accept input? Also do not hard-code /tmp/ */
 void report_set_ranked_filename(char *filename)
 {
-  sprintf(filename, "/tmp/%s/%s-RANK%d.tmp", task.logdir, task.fname, task.taskid);
+  //sprintf(filename, "/tmp/%s/%s-RANK%d.tmp", task.logdir, task.fname, task.taskid);
+  if (interval_logdir) {
+    sprintf(filename, "%s/%s-RANK%d.tmp", interval_logdir, task.fname, task.taskid);
+  }
+  else {
+    sprintf(filename, "/tmp/%s-RANK%d.tmp", task.fname, task.taskid);
+  }
 }
 
 

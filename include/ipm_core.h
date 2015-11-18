@@ -49,6 +49,8 @@
 /* AT - temp. find better place / names. */
 extern double IPM_TIME_INTERVAL;
 extern unsigned int IPM_CALL_INTERVAL;
+/* AT - very temp, just need it to work now */
+extern char *interval_logdir;
 
 /* clear all REPORT bits */
 #define FLAG_CLEAR_REPORT(flags_)	\

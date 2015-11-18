@@ -84,6 +84,7 @@ int ipm_in_fortran_pmpi=0;
 double t_interval;
 double IPM_TIME_INTERVAL = 0.0;
 unsigned int IPM_CALL_INTERVAL = 0;
+char *interval_logdir = NULL;
 
 void ipm_atexit_handler();
 void ipm_sig_handler(int sig);
@@ -359,6 +360,11 @@ int ipm_finalize(int flags)
   // AT: Clear alloc'd timestamp memory from global htable.
   for( i = 0; i < MAXSIZE_HASH; i++ ) {
     HENT_CLEAR(ipm_htable[i]);
+  }
+
+  // AT: Clear some mallocs
+  if(interval_logdir) {
+    free(interval_logdir);
   }
 
   return IPM_OK;
