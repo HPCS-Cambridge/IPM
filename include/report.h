@@ -138,9 +138,12 @@ typedef struct
 
 
 
+void json_report_set_filename(); // AT
 void report_set_filename();
 
 int report_xml_atroot(unsigned long flags);
+int report_json_atroot(unsigned long flags); // AT
+int report_xml_atinterval(void); // AT
 int report_xml_mpiio(unsigned long flags);
 
 void ipm_banner(FILE *f);

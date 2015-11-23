@@ -30,6 +30,7 @@ extern char **environ;
 #define ENV_INTERVAL_TIME  12
 #define ENV_REPORT_TIMESTAMPS  13
 #define ENV_INTERVAL_LOGDIR 14
+#define ENV_REPORT_FORMAT 15
 
 
 #define MAXSIZE_ENVKEY  120
@@ -123,6 +124,11 @@ int ipm_get_env()
    /* IPM_INTERVAL_LOGDIR */
     else if(!strcmp("IPM_INTERVAL_LOGDIR", key)) {
       ipm_check_env(ENV_INTERVAL_LOGDIR, val);
+    }
+    
+   /* IPM_REPORT_FORMAT */
+    else if(!strcmp("IPM_REPORT_FORMAT", key)) {
+      ipm_check_env(ENV_REPORT_FORMAT, val);
     }
     
     /* IPM_LOG none|terse|full */
@@ -280,6 +286,12 @@ int ipm_check_env(int env, char *val)
       }
 
       strcpy(interval_logdir, val);
+      break;
+
+    case ENV_REPORT_FORMAT:
+      if(!strncmp(val,"json",4) || !strncmp(val,"JSON",4)) {
+        task.flags |= FLAG_REPORT_JSON;
+      }
       break;
 
     case ENV_LOGDIR:

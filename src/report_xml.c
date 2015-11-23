@@ -786,15 +786,15 @@ int xml_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
       /*
        * AT: move tot/min/max to separate subtag, and add timestamps tag
        */
-      res += ipm_printf(ptr, " >\n");
-
-      res += ipm_printf(ptr, "<timings>");
-
-      res += ipm_printf(ptr, "%.4e %.4e %.4e", tto, tmi, tma);
-
-      res += ipm_printf(ptr, "</timings>\n");
-
       if (task.flags&FLAG_REPORT_TIMESTAMPS) {
+        res += ipm_printf(ptr, " >\n");
+
+        res += ipm_printf(ptr, "<timings>");
+
+        res += ipm_printf(ptr, "%.4e %.4e %.4e", tto, tmi, tma);
+
+        res += ipm_printf(ptr, "</timings>\n");
+
         res += ipm_printf(ptr, "<timestamps>");
 
         for ( j = 0; j < htab[i].count; j++ ) {
@@ -802,6 +802,10 @@ int xml_hash(void *ptr, taskdata_t *t, ipm_hent_t *htab) {
         }
 
         res += ipm_printf(ptr, "</timestamps>\n");
+      }
+      else {
+        res += ipm_printf(ptr, " >%.4e %.4e %.4e", tto, tmi, tma);
+
       }
 
       res += ipm_printf(ptr, "</hent>\n");

@@ -45,6 +45,7 @@
 #define FLAG_INTERVAL_CALL        (0x0000000000000001ULL <<  15)
 
 #define FLAG_REPORT_TIMESTAMPS    (0x0000000000000001ULL <<  16)
+#define FLAG_REPORT_JSON          (0x0000000000000001ULL <<  17)
 
 /* AT - temp. find better place / names. */
 extern double IPM_TIME_INTERVAL;

@@ -12,6 +12,9 @@
 
 #include "regstack.h"
 
+// AT
+#include "report.h"
+
 #ifdef HAVE_CALLPATH
 #include "mod_callpath.h"
 #endif

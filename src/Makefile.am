@@ -42,6 +42,7 @@ IPMFILES_MODULES_F=
 IPMFILES_MODULES_NODIST= 
 IPMFILES_MODULES_NODIST_F= 
 
+# AT - TODO: out back report_xml.c before report_json.c when that one is done
 IMP_CORE = \
     calltable.c \
     hashkey.c \
@@ -57,7 +58,8 @@ IMP_CORE = \
 	regstack.c \
     report.c \
     report_banner.c \
-	report_xml.c \
+		report_xml.c \
+	report_json.c \
 	ipm_introspect.c \
     $(top_srcdir)/include/calltable.h \
     $(top_srcdir)/include/hashtable.h \

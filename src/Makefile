@@ -91,7 +91,7 @@ IPMFILES = $(IPMFILES_MPI) $(IPMFILES_MPIIO) $(IPMFILES_POSIXIO) \
 	$(IPMFILES_OMPTRACEPOINTS) $(IPMFILES_CUDA) 		\
 	$(IPMFILES_CUFFT) $(IPMFILES_CUBLAS)			\
 	ipm_core hashtable calltable perfdata jobdata report 	\
-	ipm_modules regstack report_xml report_banner ipm_time  \
+	ipm_modules regstack report_xml report_json report_banner ipm_time  \
 	ipm_introspect 						\
 	memusage ipm_env md5
 

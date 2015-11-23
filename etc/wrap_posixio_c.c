@@ -12,6 +12,8 @@
 #include "perfdata.h"
 #include "mod_posixio.h"
 #include "ipm_core.h"
+//AT
+#include "report.h"
 
 #ifdef HAVE_DYNLOAD
 #include <execinfo.h>

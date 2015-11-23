@@ -386,17 +386,33 @@ void ipm_write_profile_log()
   if( (task.flags&FLAG_LOG_TERSE) ||
       (task.flags&FLAG_LOG_FULL) )
     {
-      report_set_filename();
+      // AT - todo when report_xml_io has been converted
+      //if (task.flags & FLAG_REPORT_JSON) {
+        json_report_set_filename();
+      //}
+      //else {
+        report_set_filename();
+      //}
 
       if( (task.flags&FLAG_LOGWRITER_MPIIO) )  {
 	if( report_xml_mpiio(reportflags)!=IPM_OK )
 	  {
 	    IPMERR("Writing log using MPI-IO failed, trying serial\n");
-	    report_xml_atroot(reportflags);
+      if (task.flags & FLAG_REPORT_JSON) {
+        report_json_atroot(reportflags);
+      }
+      else {
+        report_xml_atroot(reportflags);
+      }
 	  }
       }
       else {
-	report_xml_atroot(reportflags);
+        if (task.flags & FLAG_REPORT_JSON) {
+          report_json_atroot(reportflags);
+        }
+        else {
+          report_xml_atroot(reportflags);
+        }
       }
     }
 #else /* HAVE_MPI */
