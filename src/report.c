@@ -318,14 +318,14 @@ void compute_region_stats(region_t *reg, regstats_t *stats, int incl)
   ipm_hent_t hcuda, hcublas, hcufft;
   ipm_hent_t hall[MAXSIZE_CALLTABLE];
 
-  HENT_INIT(hmpi.hent);
-  HENT_INIT(hpio.hent);
-  HENT_INIT(homp.hent);
-  HENT_INIT(hompi.hent);
+  HENT_INIT(hmpi);
+  HENT_INIT(hpio);
+  HENT_INIT(homp);
+  HENT_INIT(hompi);
 
-  HENT_INIT(hcuda.hent);
-  HENT_INIT(hcublas.hent);
-  HENT_INIT(hcufft.hent);
+  HENT_INIT(hcuda);
+  HENT_INIT(hcublas);
+  HENT_INIT(hcufft);
 
   /* is this for ipm_noregion? */
   noreg=0;
