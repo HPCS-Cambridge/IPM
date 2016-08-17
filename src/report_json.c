@@ -195,9 +195,10 @@ void json_func(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab, int ac
     /* also print the func entries for all sub-regions, recursively.
        -> this makes the listed <func> entries inclusive */
     tmp=reg->child;
-    while(tmp) {
+    //while(tmp) {
+    if(tmp) {
       json_func(ptr, t, tmp, htab, actv);
-      tmp=tmp->next;
+    //tmp=tmp->next;
     }
   }
 
@@ -242,8 +243,41 @@ void json_region(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab)
 
 void json_regions(void *ptr, taskdata_t *t, struct region *reg, ipm_hent_t *htab)
 {
+  struct region *tmp;
+  int nreg, res=0;
+  int nextid = 0;
+
+  nreg = 0;
+  tmp = reg->child;
+
+  while(tmp) {
+    nreg++;
+    tmp = tmp->next;
+  }
+
+  if (reg == t->rstack->child) {
+    nreg++; //noregion
+  }
+
   ipm_printf(ptr, "%*c\"calls\": {\n", json_depth++, ' ');
-  json_noregion(ptr, t, reg, htab);
+
+  tmp = reg->child;
+  while(tmp) {
+
+    if((t->flags)&FLAG_NESTED_REGIONS) {
+      internal2xml[tmp->id] = (tmp->id)-1;
+    }
+    else {
+      internal2xml[tmp->id] = ++nextid;
+    }
+
+    json_region(ptr, t, tmp, htab);
+    tmp = tmp->next;
+  }
+				
+  if(reg == t->rstack->child) {
+    json_noregion(ptr, t, reg, htab);
+  }
   ipm_printf(ptr, "%*c}\n", --json_depth, ' ');
 }
 
