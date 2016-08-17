@@ -282,7 +282,7 @@ int ipm_check_env(int env, char *val)
     case ENV_INTERVAL_LOGDIR:
       if(!(interval_logdir = malloc(strlen(val) * sizeof(char)))) {
         IPMERR("Could not allocate memory for interval_logdir, exiting...");
-        IPM_Abort(MPI_COMM_WORLD, -1); // AT - TODO: Error code, better exit?
+        MPI_Abort(MPI_COMM_WORLD, -1); // AT - TODO: Error code, better exit?
       }
 
       strcpy(interval_logdir, val);
