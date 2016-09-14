@@ -53,8 +53,6 @@
 #include "mod_cuda.h"
 #endif
 
-#define htable_scan(a_, b_, c_) htable_scan_named(a_, b_, c_, __FUNCTION__)
-
 // AT - necessary prototypes
 void json_regions(void *ptr, taskdata_t *t, struct region *reg, ipm_hent_t *htab);
 void json_noregion(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab);
