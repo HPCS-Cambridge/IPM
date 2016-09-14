@@ -151,7 +151,7 @@ void json_perf(void *ptr, taskdata_t *t)
   ipm_printf(ptr, "%*c},\n", --json_depth, ' ');
 }
 
-void json_print_instances(void *ptr, taskdata_t *t, ipm_hent_t *htab, int actv);
+void json_print_instances(void *ptr, taskdata_t *t, ipm_hent_t *htab, int actv, int reg);
 
 void json_func(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab, int actv)
 {
@@ -178,29 +178,30 @@ void json_func(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab, int ac
   scanspec_unrestrict_all(&spec);
   scanspec_restrict_activity(&spec, actv, actv);
   scanspec_restrict_region(&spec, reg->id, reg->id);
+  //fprintf(stderr, "JSON_FUNC REGION: %d\n", reg->id);
 
   nkey = htable_scan( htab, &stats, spec );
   if( nkey>0 ) {
+    //fprintf(stderr, "NAME: %s\n", ipm_calltable[actv].name);
     ipm_printf(ptr, "%*c\"%s\": {\n", json_depth++, ' ', ipm_calltable[actv].name);
     ipm_printf(ptr, "%*c\"bytes\": %f,\n", json_depth, ' ', stats.bytesum);
     ipm_printf(ptr, "%*c\"count\": %d,\n", json_depth, ' ', stats.hent.count);
     ipm_printf(ptr, "%*c\"instances\": {\n", json_depth++, ' ');
-    json_print_instances(ptr, t, htab, actv);
+    json_print_instances(ptr, t, htab, actv, reg->id);
     ipm_printf(ptr, "%*c},\n", --json_depth, ' ');
     ipm_printf(ptr, "%*c\"time\": %f\n", json_depth, ' ', stats.hent.t_tot);
     ipm_printf(ptr, "%*c},\n", --json_depth, ' ');
   }
 
-  if( !(reg->flags)&FLAG_PRINT_EXCLUSIVE) {
-    /* also print the func entries for all sub-regions, recursively.
-       -> this makes the listed <func> entries inclusive */
-    tmp=reg->child;
-    //while(tmp) {
-    if(tmp) {
-      json_func(ptr, t, tmp, htab, actv);
-    //tmp=tmp->next;
-    }
-  }
+  //if( !(reg->flags)&FLAG_PRINT_EXCLUSIVE) {
+  //  /* also print the func entries for all sub-regions, recursively.
+  //     -> this makes the listed <func> entries inclusive */
+  //  tmp=reg->child;
+  //  while(tmp) {
+  //    json_func(ptr, t, tmp, htab, actv);
+  //    tmp=tmp->next;
+  //  }
+  //}
 
   if( stats.hent.count && stats.hent.timestamps ) {
     free(stats.hent.timestamps);
@@ -213,6 +214,7 @@ void json_region(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab)
   int offs, range;
 
   /* print the <func> entries for all modules */
+
   for( i=0; i<MAXNUM_MODULES; i++ ) {
     offs  = modules[i].ct_offs;
     range = modules[i].ct_range;
@@ -239,6 +241,7 @@ void json_region(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab)
     json_regions(ptr, t, reg, htab);
   }
 
+
 }
 
 void json_regions(void *ptr, taskdata_t *t, struct region *reg, ipm_hent_t *htab)
@@ -259,8 +262,7 @@ void json_regions(void *ptr, taskdata_t *t, struct region *reg, ipm_hent_t *htab
     nreg++; //noregion
   }
 
-  ipm_printf(ptr, "%*c\"calls\": {\n", json_depth++, ' ');
-
+  ipm_printf(ptr, "%*c\"Region: %d\": {\n", json_depth++, ' ', reg->id);
   tmp = reg->child;
   while(tmp) {
 
@@ -274,11 +276,13 @@ void json_regions(void *ptr, taskdata_t *t, struct region *reg, ipm_hent_t *htab
     json_region(ptr, t, tmp, htab);
     tmp = tmp->next;
   }
-				
+
+
   if(reg == t->rstack->child) {
     json_noregion(ptr, t, reg, htab);
   }
   ipm_printf(ptr, "%*c}\n", --json_depth, ' ');
+
 }
 
 void json_noregion(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab)
@@ -329,10 +333,10 @@ void json_noregion(void *ptr, taskdata_t *t, region_t *reg, ipm_hent_t *htab)
   json_region(ptr, t, &noregion, htab);
 }
 
-void json_print_instances(void *ptr, taskdata_t *t, ipm_hent_t *htab, int actv)
+void json_print_instances(void *ptr, taskdata_t *t, ipm_hent_t *htab, int actv, int reg)
 {
   int i, j;
-  int slct, call, bytes, reg, csite;
+  int slct, call, bytes,/* reg,*/ csite;
   int op, dtype;
   int inst_count;
   IPM_COUNT_TYPE count;
@@ -346,49 +350,49 @@ void json_print_instances(void *ptr, taskdata_t *t, ipm_hent_t *htab, int actv)
   inst_count = 0;
   nkey = 0;
 
-#ifdef HAVE_MPI
-  nkey += htable_scan_activity( htab, &stats,
-      MPI_MINID_GLOBAL, MPI_MAXID_GLOBAL);
-  count = stats.hent.count;
-
-  if( stats.hent.count && stats.hent.timestamps ) {
-    free(stats.hent.timestamps);
-  }
-#endif
-
-#ifdef HAVE_OMPTRACEPOINTS
-  nkey += htable_scan_activity( htab, &stats,
-      OMP_MINID_GLOBAL, OMP_MAXID_GLOBAL);
-  count += stats.hent.count;
-
-  if( stats.hent.count && stats.hent.timestamps ) {
-    free(stats.hent.timestamps);
-  }
-#endif
-#ifdef HAVE_POSIXIO
-  nkey += htable_scan_activity( htab, &stats,
-      POSIXIO_MINID_GLOBAL, POSIXIO_MAXID_GLOBAL);
-  count += stats.hent.count;
-
-  if( stats.hent.count && stats.hent.timestamps ) {
-    free(stats.hent.timestamps);
-  }
-#endif
-
-#ifdef HAVE_MPIIO
-  nkey += htable_scan_activity( htab, &stats,
-      MPIIO_MINID_GLOBAL, MPIIO_MAXID_GLOBAL);
-  count += stats.hent.count;
-
-  if( stats.hent.count && stats.hent.timestamps ) {
-    free(stats.hent.timestamps);
-  }
-#endif /* HAVE_MPIIO */
-
-
+//#ifdef HAVE_MPI
+//  nkey += htable_scan_activity( htab, &stats,
+//      MPI_MINID_GLOBAL, MPI_MAXID_GLOBAL);
+//  count = stats.hent.count;
+//
+//  if( stats.hent.count && stats.hent.timestamps ) {
+//    free(stats.hent.timestamps);
+//  }
+//#endif
+//
+//#ifdef HAVE_OMPTRACEPOINTS
+//  nkey += htable_scan_activity( htab, &stats,
+//      OMP_MINID_GLOBAL, OMP_MAXID_GLOBAL);
+//  count += stats.hent.count;
+//
+//  if( stats.hent.count && stats.hent.timestamps ) {
+//    free(stats.hent.timestamps);
+//  }
+//#endif
+//#ifdef HAVE_POSIXIO
+//  nkey += htable_scan_activity( htab, &stats,
+//      POSIXIO_MINID_GLOBAL, POSIXIO_MAXID_GLOBAL);
+//  count += stats.hent.count;
+//
+//  if( stats.hent.count && stats.hent.timestamps ) {
+//    free(stats.hent.timestamps);
+//  }
+//#endif
+//
+//#ifdef HAVE_MPIIO
+//  nkey += htable_scan_activity( htab, &stats,
+//      MPIIO_MINID_GLOBAL, MPIIO_MAXID_GLOBAL);
+//  count += stats.hent.count;
+//
+//  if( stats.hent.count && stats.hent.timestamps ) {
+//    free(stats.hent.timestamps);
+//  }
+//#endif /* HAVE_MPIIO */
+//
+//
   for( i=0; i<MAXSIZE_HASH; i++ )
   {
-    if( htab[i].count==0 || KEY_GET_ACTIVITY(htab[i].key) != actv )
+    if( htab[i].count==0 || KEY_GET_ACTIVITY(htab[i].key) != actv || (t->flags & FLAG_NESTED_REGIONS && (KEY_GET_REGION(htab[i].key) != reg)))
       continue;
 
     slct  = KEY_GET_SELECT(htab[i].key);
@@ -405,6 +409,7 @@ void json_print_instances(void *ptr, taskdata_t *t, ipm_hent_t *htab, int actv)
 
     ipm_printf(ptr, "%*c\"%d\": {\n", json_depth++, ' ', inst_count++);
 
+    ipm_printf(ptr, "%*c\"region\": %d,\n", json_depth, ' ', reg);
     ipm_printf(ptr, "%*c\"bytes\": %d,\n", json_depth, ' ', bytes);
     ipm_printf(ptr, "%*c\"count\": %d,\n", json_depth, ' ', htab[i].count);
 

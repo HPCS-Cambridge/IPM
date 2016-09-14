@@ -169,6 +169,8 @@ void htable_clear(ipm_hent_t *table, scanspec_t spec);
 
 int htable_scan(const ipm_hent_t *table, scanstats_t *stats,
 		scanspec_t spec );
+//int htable_scan_named(const ipm_hent_t *table, scanstats_t *stats,
+//		scanspec_t spec, const char *name );
 
 int htable_scan_multi(const ipm_hent_t *table, int nspec,
 		      ipm_hent_t stats[], scanspec_t spec[] );

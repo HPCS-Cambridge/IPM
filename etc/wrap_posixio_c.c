@@ -120,6 +120,35 @@ __CRET__ __wrap___CFNAME__(__CPARAMS__)
   
   __GET_BYTES__(bytes);
 
+  /* Signal on bandwidth > threshold
+	 * TODO - Configurable threshold/timestep
+	 * TODO - Signal in a different way than printf to tty
+	 */
+#define BW_THRESH 130
+#define BW_TIMESTEP 5
+
+	static double t_bw = -1.0;
+	static double mbytes = 0.0;
+	double t_diff, bw;
+
+	/* init static vars */
+	if (t_bw < 0) {
+		t_bw = tstop;
+	}
+
+	mbytes += bytes/1048574.0;
+
+	t_diff = tstop - t_bw;
+
+	if (t_diff > BW_TIMESTEP) {
+		bw = mbytes / t_diff;
+		if (bw > BW_THRESH) {
+			printf("__CFNAME__ BW over %d MB/s (rolling %f)\n", BW_THRESH, bw);
+		}
+		t_bw = tstop;
+		mbytes = 0.0;
+	}
+
   csite=0;
 
 #ifdef HAVE_CALLPATH

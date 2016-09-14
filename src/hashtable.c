@@ -184,7 +184,7 @@ int htable_scan( const ipm_hent_t *table, scanstats_t *stats,
         continue;
 
       act = KEY_GET_ACTIVITY(table[i].key);
-      reg = KEY_GET_REGION(table[i].key);
+      reg = KEY_GET_REGION(table[i].key);//fprintf(stderr, "SCAN REGION: %u, LO %u HI %u\n", reg, lreg, hreg);
       cal = KEY_GET_CALLSITE(table[i].key);
       rnk = KEY_GET_RANK(table[i].key);
       tid = KEY_GET_TID(table[i].key);
@@ -197,6 +197,7 @@ int htable_scan( const ipm_hent_t *table, scanstats_t *stats,
 	  (ltid<=tid && tid<=htid) &&
 	  (lbyt<=byt && byt<=hbyt) )
 	{
+      reg = KEY_GET_REGION(table[i].key);//fprintf(stderr, "SCAN REGION: %u, LO %u HI %u\n", reg, lreg, hreg);
 	  res++;
     oldcount = stats->hent.count;
 	  stats->hent.count+=table[i].count;
@@ -226,6 +227,14 @@ int htable_scan( const ipm_hent_t *table, scanstats_t *stats,
   return res;
 }
 
+//int htable_scan_named( const ipm_hent_t *table, scanstats_t *stats,
+//		 scanspec_t spec , const char *name)
+//{
+//	fprintf(stderr, "Caller is '%s'\n", name);
+//	return htable_scan(table,stats,spec);
+//}
+//#define htable_scan(a_, b_, c_) htable_scan_named(a_, b_, c_, __FUNCTION__)
+//
 /*
  * scan the hashtable for multiple matches simultaneously
  * implemented as one pass over the hashtable
