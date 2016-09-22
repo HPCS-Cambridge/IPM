@@ -78,6 +78,11 @@ int ipm_get_env()
   if(!getenv("IPM_HPM")) {
    putenv("IPM_HPM=PAPI_FP_OPS");
   }
+
+	/* Just force Platform to use nested regions & be done with it */
+	if(getenv("PCMPI")) {
+		ipm_check_env(ENV_NESTED_REGIONS, NULL);
+	}
   
 /* end defaults */
 
